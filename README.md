@@ -28,13 +28,13 @@
 
 ```mermaid
 flowchart LR
-    A[動画・写真] --> B[VGGT\n深度・カメラ推定]
-    B --> C[SpatialLM\n部屋の構造]
-    A --> D[Grounding DINO + SAM 2\n家具の検出・領域抽出]
+    A[動画・写真] --> B[VGGT<br/>深度・カメラ推定]
+    B --> C[SpatialLM<br/>部屋の構造]
+    A --> D[Grounding DINO + SAM 2<br/>家具の検出・領域抽出]
     B --> E[固定メッシュ + 写真投影]
     C --> E
     D --> E
-    E --> F[Three.js\n3D表示・移動]
+    E --> F[Three.js<br/>3D表示・移動]
     G[物・収納の登録] --> H[(SQLite)]
     H --> I[キーワード検索 + E5意味検索]
     I --> J[候補確認・記録に基づく回答]
