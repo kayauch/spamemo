@@ -1,0 +1,54 @@
+import {captureOrientation} from './capture-orientation.mjs?v=20260926-landscape1';
+import {icon,installShell,decorateIcons} from './spamemo-shell.mjs?v=20260926-ui2';
+import {CaptureRecorder} from './capture-recorder.mjs?v=20260926-ui2';
+import {elapsedLabel,supportedZooms} from './video-capture-utils.mjs?v=20260926-ui2';
+
+export function installRoomWizard(){
+  installShell();const $=id=>document.getElementById(id),dialog=$('roomCamera'),video=$('roomCameraVideo');
+  let step=1,busy=false,recordings=[],previewUrl=null,torch=false,closePending=false,recordingOrientation=null,orientationStopPending=false,noticeTimer=null;
+  const announce=(message,{persistent=false}={})=>{clearTimeout(noticeTimer);$('cameraStatus').textContent=message;$('cameraStatus').hidden=!message;if(message&&!persistent)noticeTimer=setTimeout(()=>{$('cameraStatus').hidden=true;},3200);};
+  const pageError=message=>{$('cameraError').textContent=message;$('cameraError').hidden=!message;};
+  function setStep(value,{focus=false}={}){step=value;document.querySelectorAll('[data-step-panel]').forEach(panel=>panel.hidden=Number(panel.dataset.stepPanel)!==value);document.querySelectorAll('#creationSteps li').forEach((li,index)=>{li.classList.toggle('active',index===value-1);li.classList.toggle('done',index<value-1);if(index===value-1)li.setAttribute('aria-current','step');else li.removeAttribute('aria-current');});if(focus){document.querySelector(`[data-step-panel="${value}"] h1`)?.focus();window.scrollTo({top:0,behavior:'smooth'});}}
+  function validName(){if(!$('name').value.trim()){$('name').setCustomValidity('部屋の名前を入力してください。');setStep(1);$('name').reportValidity();$('name').focus();return false;}$('name').setCustomValidity('');return true;}
+  $('name').addEventListener('input',()=>$('name').setCustomValidity(''));
+  $('nextCapture').onclick=()=>{if(validName())setStep(2,{focus:true});};$('backInfo').onclick=()=>setStep(1,{focus:true});
+  $('editCapture').onclick=()=>setStep(2,{focus:true});
+  function drawRecordings(){const root=$('recordedFiles');root.replaceChildren();recordings.forEach((file,index)=>{const row=document.createElement('div');row.className='recorded-file';const text=document.createElement('span');text.textContent=`撮影した動画 ${index+1} · ${(file.size/1024/1024).toFixed(1)} MB`;const button=document.createElement('button');button.type='button';button.disabled=busy;button.setAttribute('aria-label',`撮影した動画 ${index+1}を取り除く`);button.append(icon('close'));button.onclick=()=>{recordings.splice(index,1);drawRecordings();};row.append(icon('camera'),text,button);root.append(row);});$('recordingCount').textContent=`撮影済み ${recordings.length}本`;$('reviewClips').hidden=!recordings.length;if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=null;const first=recordings[0];$('recordedPreview').hidden=!first;if(first){previewUrl=URL.createObjectURL(first);$('recordedPreview').src=previewUrl;}else $('recordedPreview').removeAttribute('src');}
+  const recorder=new CaptureRecorder({onClip:file=>{recordings.push(file);drawRecordings();announce('動画を保存しました。');},onError:message=>{announce(message,{persistent:true});pageError(message);},onState:(state,detail={})=>{
+    const recording=state==='recording',ready=state==='ready';$('cameraShutter').disabled=!recording&&!ready;$('cameraShutter').classList.toggle('recording',recording);$('cameraShutter').setAttribute('aria-label',recording?'録画を停止':'録画を開始');$('recordingLabel').textContent=recording?'録画中':state==='stopping'?'保存しています':state==='opening'?'準備中':'録画';if(detail.seconds!=null)$('recordingTime').textContent=elapsedLabel(detail.seconds);$('zoomButtons').querySelectorAll('button').forEach(button=>button.disabled=!ready);$('torchButton').disabled=!ready;if(detail.message)announce(detail.message,{persistent:true});dialog.classList.toggle('is-recording',recording);$('reviewClips').disabled=state==='stopping';$('cameraSettings').disabled=recording||state==='stopping';if(recording)setControlsOpen(false);
+    if(state==='closed'){setControlsOpen(false);announce('');recordingOrientation=null;video.srcObject=null;if(dialog.open&&!recorder.opening)dialog.close();}
+    syncOrientation();
+  }});
+  function orientationSample(){return {landscape:window.matchMedia('(orientation: landscape)').matches,width:video.videoWidth,height:video.videoHeight,angle:window.screen.orientation?.angle??null};}
+  function syncOrientation(){
+    const sample=orientationSample(),gate=captureOrientation(sample),recording=recorder.state==='recording';
+    const notice=$('cameraOrientation');notice.hidden=gate.allowed||!dialog.open;notice.textContent=gate.message;
+    dialog.classList.toggle('needs-landscape',!gate.allowed);
+    $('cameraShutter').disabled=orientationStopPending||(!recording&&(recorder.state!=='ready'||!gate.allowed));
+    if(recorder.state==='ready'&&!gate.allowed)$('recordingLabel').textContent=gate.reason==='loading'?'準備中':'横向きにする';
+    else if(recorder.state==='ready')$('recordingLabel').textContent='録画';
+    if(recording&&!orientationStopPending&&!captureOrientation(sample,recordingOrientation).allowed){
+      orientationStopPending=true;const before=recordings.length;
+      recorder.stop().then(()=>{recordingOrientation=null;announce(recordings.length>before?'向きが変わったため停止し、動画を保存しました。':'向きが変わったため停止しました。動画を確認してください。',{persistent:true});}).catch(error=>pageError(error.message)).finally(()=>{orientationStopPending=false;syncOrientation();});
+    }
+  }
+  window.addEventListener('resize',syncOrientation);
+  window.screen.orientation?.addEventListener('change',syncOrientation);
+  video.addEventListener('resize',syncOrientation);
+  video.addEventListener('loadedmetadata',syncOrientation);
+  async function closeCamera(){if(closePending)return;closePending=true;setControlsOpen(false);await recorder.close();video.srcObject=null;if(dialog.open)dialog.close();closePending=false;}
+  async function configureTrack(){const track=recorder.stream?.getVideoTracks()[0];if(!track)return;const caps=track.getCapabilities?.()||{},settings=track.getSettings?.()||{};torch=false;$('torchButton').hidden=!(caps.torch===true||Array.isArray(caps.torch)&&caps.torch.includes(true));$('torchButton').setAttribute('aria-pressed','false');$('torchLabel').textContent='ライト オフ';const root=$('zoomButtons');root.replaceChildren();for(const value of supportedZooms(caps.zoom)){const button=document.createElement('button');button.type='button';button.textContent=value+'×';button.setAttribute('aria-label','倍率 '+value+'倍');button.setAttribute('aria-pressed',String(Math.abs((settings.zoom??1)-value)<.05));button.onclick=async()=>{try{await track.applyConstraints({advanced:[{zoom:value}]});root.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));}catch{announce('この倍率に切り替えられませんでした。');}};root.append(button);}root.hidden=!root.children.length;}
+  $('openCamera').onclick=async()=>{if(busy||recorder.opening)return;pageError('');try{const promise=recorder.open();dialog.showModal();syncOrientation();announce('');const stream=await promise;if(!stream||!dialog.open)return;video.srcObject=stream;await video.play();await configureTrack();syncOrientation();announce('');}catch(error){await closeCamera();const message=error.name==='NotAllowedError'?'カメラが許可されませんでした。ブラウザの権限を確認するか「端末のカメラで撮影」を使ってください。':error.name==='NotFoundError'?'カメラが見つかりません。「動画ファイルを選ぶ」から追加できます。':error.message;pageError(message);}};
+  $('cameraShutter').onclick=async()=>{try{if(recorder.state==='recording')await recorder.stop();else{const sample=orientationSample();if(!captureOrientation(sample).allowed||orientationStopPending){syncOrientation();return;}if(recordings.length+$('videos').files.length>=6){announce('動画は合計6本までです。内容確認に戻り、不要な動画を取り除いてください。');return;}announce('');recordingOrientation=sample;recorder.start();}}catch(error){announce(error.message,{persistent:true});}};
+  $('closeCamera').onclick=closeCamera;$('reviewClips').onclick=closeCamera;dialog.addEventListener('cancel',event=>{event.preventDefault();if(!$('cameraControls').hidden){setControlsOpen(false,{focus:true});return;}closeCamera();});dialog.addEventListener('close',()=>{if(recorder.stream||recorder.opening)recorder.close();});
+  function setControlsOpen(open,{focus=false}={}){$('cameraControls').hidden=!open;$('cameraSettings').setAttribute('aria-expanded',String(open));if(!open){$('cameraTipsPanel').hidden=true;$('cameraTips').setAttribute('aria-expanded','false');}if(focus)$('cameraSettings').focus();}
+  $('cameraSettings').onclick=()=>setControlsOpen($('cameraControls').hidden);
+  dialog.addEventListener('click',event=>{if(!event.target.closest('#cameraControls,#cameraSettings'))setControlsOpen(false);});
+  $('gridButton').onclick=()=>{const active=$('cameraGrid').hidden;$('cameraGrid').hidden=!active;$('gridButton').setAttribute('aria-pressed',String(active));$('gridLabel').textContent='グリッド '+(active?'オン':'オフ');};
+  $('torchButton').onclick=async()=>{const track=recorder.stream?.getVideoTracks()[0];if(!track)return;try{await track.applyConstraints({advanced:[{torch:!torch}]});torch=!torch;$('torchButton').setAttribute('aria-pressed',String(torch));$('torchLabel').textContent='ライト '+(torch?'オン':'オフ');}catch{announce('ライトを切り替えられませんでした。');}};
+  $('cameraTips').onclick=()=>{$('cameraTipsPanel').hidden=!$('cameraTipsPanel').hidden;$('cameraTips').setAttribute('aria-expanded',String(!$('cameraTipsPanel').hidden));};
+  $('nativeVideo').onchange=()=>{const file=$('nativeVideo').files[0];if(file){if(!file.size||file.size>256*1024*1024)pageError('動画は空でない256MB以下のファイルを選んでください。');else if(recordings.length+$('videos').files.length>=6)pageError('動画は合計6本までです。');else{recordings.push(file);drawRecordings();pageError('');}}$('nativeVideo').value='';};
+  document.addEventListener('visibilitychange',()=>{if(document.hidden&&(recorder.stream||recorder.opening))closeCamera();});window.addEventListener('pagehide',()=>{clearTimeout(noticeTimer);recorder.close();if(previewUrl)URL.revokeObjectURL(previewUrl);});
+  decorateIcons(dialog);
+  return {setStep,currentStep:()=>step,validName,files:()=>[...recordings],hasRecordings:()=>recordings.length>0||recorder.state==='recording',clear:()=>{recordings=[];drawRecordings();},setBusy:value=>{busy=value;if(value)closeCamera();$('openCamera').disabled=value;$('nativeVideo').disabled=value;$('editCapture').disabled=value;document.body.classList.toggle('is-processing',value);$('recordedFiles').querySelectorAll('button').forEach(button=>button.disabled=value);},setScenes:scenes=>{const scene=scenes.find(s=>s.frames_dir&&s.frame_count>0);if(scene)document.querySelector('.create-backdrop').style.setProperty('--room-photo',`url("/scenes/${encodeURIComponent(scene.id)}/frames/0")`);},roomType:()=>document.querySelector('input[name=roomType]:checked')?.value??null,fillRoomType:value=>document.querySelectorAll('input[name=roomType]').forEach(input=>input.checked=input.value===value)};
+}

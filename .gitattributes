@@ -1,0 +1,2 @@
+# WSL launchers must remain executable by bash after a Windows checkout.
+*.sh text eol=lf

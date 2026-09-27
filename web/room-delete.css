@@ -1,0 +1,18 @@
+.room-card:has(.room-menu[open]){z-index:3}
+.room-menu>summary{width:36px;height:36px;min-height:36px}
+.room-menu-body button.room-delete-button{display:block;width:100%;padding:11px 10px;margin-top:5px;border:0;border-top:1px solid #40546e;border-radius:0 0 5px 5px;background:transparent;color:#ffb5b9;text-align:left;font:inherit;font-size:13px;cursor:pointer}
+.room-menu-body button.room-delete-button:hover{background:#542c39}
+.room-menu-body button:focus-visible,.room-delete-actions button:focus-visible{outline:2px solid #9bc5ff;outline-offset:3px}
+.room-delete-dialog{max-width:440px}
+.room-delete-name{display:block;font-size:18px;overflow-wrap:anywhere}
+.room-delete-dialog .room-delete-date{font-size:12px;color:#9eafc4;margin:6px 0 18px}
+.room-delete-dialog p{line-height:1.8}
+.room-delete-dialog .room-delete-error{color:#ffb5b9}
+.room-delete-actions{display:flex;gap:12px;margin-top:24px}
+.room-delete-actions button{flex:1;min-height:44px;justify-content:center}
+.room-delete-confirm{padding:11px 16px;border:1px solid #cf5d70;border-radius:9px;background:#ad344c;color:#fff;font:inherit;font-weight:600;cursor:pointer}
+.room-delete-confirm:hover{background:#c53d57}
+.room-delete-actions button:disabled{opacity:.6;cursor:wait}
+.room-delete-notice{padding:12px 16px;border:1px solid #385a6a;border-radius:9px;color:#c3e6ef;background:#172c35;font-size:14px;overflow-wrap:anywhere}
+.room-delete-notice[hidden],.room-delete-error[hidden]{display:none}
+@media(min-width:361px) and (max-width:600px){.room-card:nth-child(odd) .room-menu-body{left:0;right:auto}}

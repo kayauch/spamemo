@@ -1,0 +1,8 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {wallBetween,insideFootprint,placementIssues} from '../web/room-review-math.mjs';
+test('only wall between camera and focus fades',()=>{const wall={origin:[0,0,0],u:[4,0,0],v:[0,0,3]};assert.equal(wallBetween([2,-3,2],[2,2,1],wall),true);assert.equal(wallBetween([2,1,2],[2,2,1],wall),false);assert.equal(wallBetween([8,-3,2],[8,2,1],wall),false);assert.equal(wallBetween([2,-3,5],[2,2,5],wall),true);});
+test('floor footprint membership',()=>{assert.equal(insideFootprint([1,1],[[0,0],[2,0],[2,2],[0,2]]),true);assert.equal(insideFootprint([3,1],[[0,0],[2,0],[2,2],[0,2]]),false);});
+const box=(id,label,min,max)=>({id,label,min,max});
+test('support permits stacked boxes, but flags floating furniture and buried base',()=>{const items=[box(1,'cabinet',[0,0,0],[1,1,1]),box(2,'box',[0,0,1],[1,1,1.4]),box(3,'bed',[3,0,.5],[4,1,1]),box(4,'sofa',[5,0,-.4],[6,1,.5])];const issues=placementIssues(items,0);assert.deepEqual(issues.map(x=>[x.kind,x.ids]),[['floating',[3]],['below_floor',[4]]]);});
+test('cabinet contents and chair under desk are not collisions',()=>{assert.deepEqual(placementIssues([box(1,'cabinet',[0,0,0],[2,2,2]),box(2,'box',[.5,.5,.7],[1,1,1]),box(3,'desk',[3,0,0],[5,2,1]),box(4,'chair',[3,0,0],[4,1,.8])],0),[]);});
+test('large solid overlap flagged; mere contact and curtains ignored',()=>{const a=box(1,'cabinet',[0,0,0],[1,1,2]);assert.equal(placementIssues([a,box(2,'bed',[.5,0,0],[2,1,1])],0).some(i=>i.kind==='overlap'),true);assert.deepEqual(placementIssues([a,box(2,'bed',[1,0,0],[2,1,1]),box(3,'curtain',[0,0,1],[1,.1,3])],0),[]);});

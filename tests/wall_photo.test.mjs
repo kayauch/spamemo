@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {homography,project,warpPixels,validateQuad,surfaceSignature} from '../web/wall-photo-math.mjs';
+const q=[[.1,.1],[.9,.2],[.8,.95],[.2,.8]],h=homography(q);
+for(const [i,p] of [[0,[0,0]],[1,[1,0]],[2,[1,1]],[3,[0,1]]])assert.ok(project(h,...p).every((v,j)=>Math.abs(v-q[i][j])<1e-8));
+assert.throws(()=>validateQuad([[0,0],[1,1],[1,0],[0,1]]));
+assert.throws(()=>validateQuad([[0,0],[1,0],[NaN,1],[0,1]]));
+const src=new Uint8ClampedArray([255,0,0,255,0,255,0,255,0,0,255,255,255,255,255,255]);
+const output=warpPixels(src,2,2,[[0,0],[1,0],[1,1],[0,1]],1,1);
+assert.deepEqual([...output],[128,128,128,255]);
+assert.notEqual(surfaceSignature({id:'wall-1',origin:[0,0,0],u:[1,0,0],v:[0,0,1]}),surfaceSignature({id:'wall-1',origin:[2,0,0],u:[1,0,0],v:[0,0,1]}));
+console.log('Projection corners, invalid quads, bilinear sampling and geometry binding passed');

@@ -1,0 +1,87 @@
+# Optional GPU development environment; NVIDIA Container Toolkit is required.
+# Model weights and third-party code are installed separately in ignored folders.
+# The full room pipeline also uses a Windows/WSL SpatialLM runner and is not
+# reproduced by this Compose file alone. Use the README's synthetic demo first.
+services:
+  dev:
+    build: .
+    image: spatial-memory-hackathon:dev
+    container_name: spatial-memory-dev-v2
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+      - ./third_party:/workspace/third_party
+      - ./room_inputs:/datasets:ro
+      - ./data:/results
+    environment:
+      HF_HOME: /results/hf-cache
+      PYTHONPATH: /workspace/src:/workspace/third_party/Depth-Anything-3/src:/workspace/third_party/vggt-omega
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    shm_size: "16gb"
+    command: sleep infinity
+
+  api:
+    image: spatial-memory-hackathon:dev
+    container_name: spatial-memory-api-v2
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+      - ./third_party:/workspace/third_party:ro
+      - ./data:/results
+    environment:
+      PYTHONPATH: /workspace/src:/workspace/third_party/Depth-Anything-3/src:/workspace/third_party/vggt-omega
+      SPATIAL_DB: /results/spatial-memory-v2.db
+      HF_HOME: /results/hf-cache
+      LLM_BASE_URL: ${LLM_BASE_URL:-http://llm:9000/v1}
+      LLM_MODEL: ${LLM_MODEL:-Qwen/Qwen3-4B}
+      LLM_API_KEY: ${LLM_API_KEY:-local}
+      DEMO_ACCESS_TOKEN: ${DEMO_ACCESS_TOKEN:-}
+      SEMANTIC_SEARCH_ENABLED: ${SEMANTIC_SEARCH_ENABLED:-1}
+      SEMANTIC_MODEL: ${SEMANTIC_MODEL:-intfloat/multilingual-e5-small}
+      SCENE_ROOT: ${SCENE_ROOT:-/results/scenes-v2}
+      RECONSTRUCTION_BACKEND: ${RECONSTRUCTION_BACKEND:-vggt}
+      RECONSTRUCTION_MODEL: ${RECONSTRUCTION_MODEL:-depth-anything/DA3-LARGE-1.1}
+      VGGT_CHECKPOINT: ${VGGT_CHECKPOINT:-/workspace/checkpoints/vggt/model.pt}
+      VGGT_REPO: ${VGGT_REPO:-/workspace/third_party/vggt}
+      VGGT_OMEGA_CHECKPOINT: ${VGGT_OMEGA_CHECKPOINT:-}
+      VGGT_OMEGA_RESOLUTION: ${VGGT_OMEGA_RESOLUTION:-512}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    shm_size: "4gb"
+    ports:
+      - "127.0.0.1:8001:8000"
+    command: python -m uvicorn spatial_memory.api:app --host 0.0.0.0 --port 8000
+
+  llm:
+    image: spatial-memory-hackathon:dev
+    container_name: spatial-memory-llm-v2
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+      - ./data:/results
+    environment:
+      PYTHONPATH: /workspace/src
+      HF_HOME: /results/hf-cache
+      LOCAL_LLM_MODEL: ${LOCAL_LLM_MODEL:-Qwen/Qwen3-4B}
+      LOCAL_LLM_MAX_NEW_TOKENS: ${LOCAL_LLM_MAX_NEW_TOKENS:-384}
+      LOCAL_LLM_TEMPERATURE: ${LOCAL_LLM_TEMPERATURE:-0.1}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    shm_size: "4gb"
+    command: python -m uvicorn spatial_memory.local_llm_server:app --host 0.0.0.0 --port 9000

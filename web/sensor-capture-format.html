@@ -1,0 +1,34 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>深度付き撮影データの形式 | Spatial Memory</title><link rel="stylesheet" href="/static/yuu-ui/spatial-ui.css"><style>main{max-width:850px;margin:40px auto;padding:0 20px;line-height:1.9}pre{overflow:auto;padding:20px;background:#f4f6f8;border-radius:12px;font-size:13px}code{font-size:.9em}a{color:#1967d2}</style></head><body><main>
+<a href="/room/new">← 部屋の作成に戻る</a><h1>深度付き撮影データの取り込み</h1>
+<p>対応端末・アプリから、RGB画像、実寸の奥行き、カメラ情報をまとめて書き出したZIPを読み込めます。このWeb画面で端末のLiDARを直接起動する機能ではありません。端末ごとの書き出し接続と実機精度は未検証です。</p>
+<h2>必要な情報</h2><ul><li>同じ部屋の2フレーム以上のRGB画像（JPEG/PNG）</li><li>RGB画像と同じ画素に位置合わせした奥行き：メートル単位、カメラの前方向の距離（z-depth）、NumPy .npy の二次元浮動小数点配列</li><li>各画像のカメラ内部行列 K（3×3）と、共通の実寸座標からカメラへ変換する外部行列（3×4または4×4）</li><li>任意：0～1の信頼度画像 .npy。0は無効。奥行きの欠損画素は0で表します。</li></ul>
+<p>座標はOpenCV式のカメラ軸（右が+x、下が+y、前が+z）です。ARKitなどのカメラ情報をそのまま入れず、座標と奥行きの定義を合わせてください。画像の回転・切り抜き・縮小を行った場合はKも対応させます。</p>
+<h2>ZIPの中身</h2><pre>manifest.json
+rgb/000.png
+rgb/001.png
+depth/000.npy
+depth/001.npy</pre>
+<p><code>manifest.json</code> の例です。行列は説明用です。実際の撮影データに対応する値を書き出してください。</p>
+<pre>{
+  "schema_version": 1,
+  "depth_unit": "meters",
+  "pose_convention": "world_to_camera_opencv",
+  "frames": [
+    {
+      "rgb": "rgb/000.png",
+      "depth": "depth/000.npy",
+      "intrinsics": [[500,0,320],[0,500,240],[0,0,1]],
+      "extrinsics": [[1,0,0,0],[0,1,0,0],[0,0,1,0]],
+      "timestamp_seconds": 0.0
+    },
+    {
+      "rgb": "rgb/001.png",
+      "depth": "depth/001.npy",
+      "intrinsics": [[500,0,320],[0,500,240],[0,0,1]],
+      "extrinsics": [[1,0,0,-0.3],[0,1,0,0],[0,0,1,0]],
+      "timestamp_seconds": 1.0
+    }
+  ]
+}</pre>
+<h2>使い方と制限</h2><p>部屋作成画面の「深度付き撮影データ」からZIPを選び、新しい部屋として作成します。位置合わせが不明な動画・写真との混在は受け付けません。入力の実寸を維持して処理しますが、センサー自体の誤差・遮蔽・反射による欠損は残ります。モデル上の家具には引き続き推定が含まれます。</p>
+</main></body></html>

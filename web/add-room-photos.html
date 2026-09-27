@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#081521"><title>写真を追加 | スパメモ</title><link rel="stylesheet" href="/static/add-room-photos.css?v=20260926-target2"></head>
+<body><main>
+<a id="back" class="back" href="/rooms">← 部屋一覧へ</a>
+<header><p id="roomName" class="eyebrow">部屋を確認しています…</p><h1>足りない部分を、写真で追加</h1><p>気になる場所を撮って、部屋をつくり直せます。</p></header>
+<section id="targetContext" class="tips" hidden><h2 id="targetName"></h2><p id="targetInstruction"></p><p id="targetWarning" class="small"></p><a id="targetModel" class="text-link">3Dで撮る場所を見直す →</a></section>
+<section id="generalPhotoTips" class="tips" aria-labelledby="tipsTitle"><h2 id="tipsTitle">撮り方のコツ</h2><p>同じ場所を、少し位置を変えて <strong>2〜4枚</strong>。周りの壁や家具も一緒に入れてください。</p><p class="small">横向きで、棚や箱は全体と側面を。壁との境目も写すと位置を合わせやすくなります。</p><details id="advice" hidden><summary>この部屋で確認したいところ</summary><ul id="suggestions"></ul><p id="repairNote" hidden>形状や家具の位置のずれも見つかっています。写真を追加するだけでは直らない場合があります。</p><a id="qualityLink" class="text-link">部屋の仕上がりを確認 →</a></details></section>
+<form id="photoForm"><fieldset id="photoControls" disabled><legend class="sr-only">追加する写真</legend><div class="pickers"><button id="takePhoto" type="button" class="secondary">写真を撮る</button><button id="choosePhotos" type="button" class="secondary">写真を選ぶ</button></div><input id="cameraInput" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden><input id="photosInput" type="file" accept="image/jpeg,image/png,image/webp" multiple hidden>
+<p class="small formats">JPEG・PNG・WebP ／ 最大32枚</p><div class="selection-heading"><h2>追加する写真</h2><span id="photoCount" aria-live="polite">0枚</span></div><p id="empty" class="empty">選んだ写真がここに並びます</p><ul id="photos" class="photos"></ul><button id="submit" type="submit" class="primary" disabled>写真を追加して再生成</button></fieldset></form>
+<p id="status" role="status" aria-live="polite">部屋の情報を読み込んでいます…</p><button id="retry" type="button" class="secondary" hidden>もう一度読み込む</button><a id="checkJobs" href="/rooms" class="text-link" target="_blank" rel="noopener" hidden>別のタブで部屋一覧を確認 →</a>
+<p class="footnote">元の動画・写真も使って再生成します。<br>今の部屋は残り、追加写真を使った別の版が作られます。</p>
+</main><script type="module" src="/static/add-room-photos.mjs?v=20260926-target2"></script></body></html>

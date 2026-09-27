@@ -1,0 +1,96 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Runtime databases and generated scene assets
+/web/repair-reviews/
+/web/generation-reviews/
+/web/colmap-reviews/
+*.db
+*.sqlite
+*.sqlite3
+*.npz
+*.ply
+/results/
+results/
+scenes/
+data/
+third_party/
+*.egg-info/
+# Model / cache artifacts
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+*.ort
+hf-cache/
+checkpoints/
+
+# Browser / mobile test runtime state
+test-assets/team-smoke-edge-profile/
+test-assets/public-mobile-edge-profile/
+test-assets/*.log
+test-assets/*.pid
+test-assets/mobile-cookie.txt
+test-assets/mobile-demo-state.json
+test-assets/*.tmp
+
+# Portable third-party executables are installed locally, not committed
+tools/*.exe
+!tools/.gitkeep
+# Local automation / secrets
+.chatGPT/
+*.local
+*.secret
+*.key
+
+# Node/browser transient output
+node_modules/
+coverage/
+dist/
+build/
+
+# Captured media and private browser fixtures are not part of the public snapshot.
+/test-assets/
+/web/test-assets/
+/room_inputs/
+/artifacts/
+/output/
+/outputs/
+/hf-cache/
+/datasets/
+/web/assets/solid-room/
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite-wal
+*.sqlite-shm
+*.log
+*.pid
+*.pem
+*.p12
+*.pfx
+*.y4m
+*.mp4
+*.mov
+*.webm
+*.wav
+handoff/ui-before-yuu-20260925/
+handoff/before-photo-workspace-20260925/
+test-assets/photo-workspace-test-entity.json
+# Generated teammate snapshot (source helper and instructions remain tracked)
+handoff/team-b-room-ui-20260924/
+handoff/team-b-room-ui-20260924.zip

@@ -1,0 +1,15 @@
+# Tested with the existing 2DGS torch 2.7.1+cu128 runtime in WSL Python 3.12.
+transformers==4.46.1
+tokenizers==0.20.3
+huggingface-hub==0.36.2
+accelerate==1.15.0
+numpy==1.26.4
+scipy==1.17.1
+einops==0.8.2
+addict==2.4.0
+timm==1.0.30
+spconv-cu126==2.3.8
+open3d==0.20.0
+shapely==2.1.2
+bbox==0.9.4
+terminaltables==3.1.10

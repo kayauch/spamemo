@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>動画からの3DGS比較</title>
+<style>body{margin:0;background:#191b21;color:white;font:15px sans-serif}#ui{position:fixed;top:12px;left:12px;z-index:2;background:#202530e8;padding:14px;border-radius:12px;max-width:450px}button,select{padding:8px;margin:4px}canvas{display:block}a{color:#b9d9ff}#status{margin:8px 0}</style>
+<script type="importmap">{"imports":{"three":"/static/vendor/three.module.js"}}</script>
+<div id="ui"><b>COLMAP + 3DGS 比較プレビュー</b><div id="status">読み込み中…</div>
+<select id="views" aria-label="撮影位置"></select><button id="walk" disabled>中を歩く</button>
+<select id="up" aria-label="動画の上方向"><option value="image-top">画像の上が天井</option><option value="image-left">画像の左が天井</option><option value="image-right">画像の右が天井</option><option value="image-bottom">画像の下が天井</option></select>
+<div>ドラッグ：見回す／歩行中はWASD：移動、Q・E：上下、Esc：終了</div>
+<small>実寸・衝突判定なし。撮影範囲外では崩れることがあります。</small><br>
+<a id="comparison">元画像と描画結果の比較</a></div>
+<script type="module" src="/static/colmap-gs.js"></script></html>

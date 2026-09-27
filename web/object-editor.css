@@ -1,0 +1,47 @@
+.object-editor{
+  box-sizing:border-box;position:fixed;inset:auto 20px 20px auto;margin:0;
+  width:min(400px,calc(100vw - 40px));max-height:min(620px,68dvh);overflow:auto;
+  padding:20px;border:1px solid #344a5e;border-radius:18px;background:#10202e;color:#edf4ff;
+  box-shadow:0 16px 55px #0008;font:14px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;
+  scrollbar-color:#435b72 #10202e;
+}
+.object-editor::backdrop{background:#03111b35;}
+.object-editor[open]{display:block;}
+.object-editor .object-editor-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;}
+.object-editor h2{margin:0;font-size:18px;line-height:1.4;font-weight:650;}
+.object-editor p{margin:8px 0 14px;}
+.object-editor button,.object-editor input{box-sizing:border-box;font:inherit;}
+.object-editor button{min-height:42px;padding:8px 13px;border:1px solid #3a536b;border-radius:10px;background:#182e42;color:#f0f6ff;cursor:pointer;}
+.object-editor button:hover{background:#223e57;}
+.object-editor button:focus-visible,.object-editor input:focus-visible,.object-editor summary:focus-visible{outline:2px solid #81c2ff;outline-offset:3px;}
+.object-editor button:disabled,.object-editor input:disabled{opacity:.55;cursor:wait;}
+.object-editor .object-editor-close{flex:0 0 auto;background:transparent;font-size:13px;min-height:36px;padding:5px 10px;}
+.object-editor .object-editor-description,.object-editor .object-editor-empty{color:#a9bdd1;font-size:13px;}
+.object-editor .object-editor-back{border:0;background:transparent;padding:4px 0;min-height:32px;color:#88bdff;font-size:13px;}
+.object-editor .object-editor-list{display:grid;gap:7px;}
+.object-editor .object-editor-row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;text-align:left;}
+.object-editor .object-editor-row span:first-child,.object-editor .object-editor-deleted-row>span,.object-editor .object-editor-selected-name{overflow-wrap:anywhere;}
+.object-editor .object-editor-chevron{color:#8ca7c2;font-size:20px;}
+.object-editor .object-editor-form label{display:grid;gap:6px;color:#bacbdb;}
+.object-editor .object-editor-name{width:100%;min-height:44px;padding:9px 12px;border:1px solid #4a637e;border-radius:10px;background:#091725;color:#f5f8ff;font-size:16px;}
+.object-editor .object-editor-actions{display:flex;justify-content:space-between;gap:10px;margin-top:16px;}
+.object-editor .object-editor-primary{background:#1975ed;border-color:#1975ed;}
+.object-editor .object-editor-primary:hover{background:#2c84f9;}
+.object-editor .object-editor-delete{color:#ffbaba;background:transparent;border-color:#76525d;}
+.object-editor .object-editor-danger{color:white;background:#af3248;border-color:#bd4156;}
+.object-editor .object-editor-danger:hover{background:#c23a52;}
+.object-editor .object-editor-selected-name{font-weight:600;font-size:16px;}
+.object-editor .object-editor-deleted{margin-top:16px;padding-top:10px;border-top:1px solid #2b4257;}
+.object-editor .object-editor-deleted summary{cursor:pointer;color:#a9bdd1;min-height:32px;}
+.object-editor .object-editor-deleted-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:7px 0;color:#adc1d5;}
+.object-editor .object-editor-restore{flex:0 0 auto;min-height:36px;padding:5px 12px;}
+.object-editor .object-editor-error{padding:10px 12px;background:#572b3855;border-radius:9px;color:#ffc2c9;font-size:13px;}
+.object-editor .object-editor-status{color:#9ccaff;font-size:13px;}
+.object-editor [hidden]{display:none!important;}
+@media(max-width:700px){
+  .object-editor{inset:auto 8px max(8px,env(safe-area-inset-bottom)) 8px;width:calc(100vw - 16px);max-height:45dvh;padding:15px;border-radius:18px;}
+  .object-editor .object-editor-header{margin-bottom:6px;}
+}
+@media(max-height:480px) and (orientation:landscape){
+  .object-editor{inset:8px 8px 8px auto;width:min(370px,48vw);max-height:calc(100dvh - 16px);padding:14px;}
+}

@@ -1,0 +1,118 @@
+"""Persistent user corrections, scoped to one inferred object identity."""
+from __future__ import annotations
+
+from typing import Annotated
+
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
+
+from .models import SpatialEntity
+
+
+Identity = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
+ObjectName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=120)]
+
+
+class ObjectCorrection(BaseModel):
+    source_prediction: Identity
+    object_id: Identity
+    name: ObjectName | None = None
+    hidden: bool = False
+
+
+class ObjectCorrectionUpdate(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    source_prediction: Identity
+    object_id: Identity
+    name: ObjectName | None = None
+    hidden: bool | None = Field(default=None, strict=True)
+
+    @model_validator(mode='after')
+    def require_change(self):
+        if not self.model_fields_set.intersection({'name', 'hidden'}):
+            raise ValueError('名前または表示状態を指定してください')
+        if 'name' in self.model_fields_set and self.name is None:
+            raise ValueError('名前を入力してください')
+        if 'hidden' in self.model_fields_set and self.hidden is None:
+            raise ValueError('表示状態を指定してください')
+        return self
+
+
+def entity_object_key(entity: SpatialEntity) -> tuple[str, str] | None:
+    prediction = entity.metadata.get('source_prediction')
+    object_id = entity.metadata.get('source_object_id')
+    if not isinstance(prediction, str) or not prediction or object_id is None:
+        return None
+    return prediction, str(object_id)
+
+
+def hidden_entity_ids(entities: list[SpatialEntity], corrections: list[ObjectCorrection]) -> set[str]:
+    hidden_keys = {(c.source_prediction, c.object_id) for c in corrections if c.hidden}
+    hidden = {entity.id for entity in entities if entity_object_key(entity) in hidden_keys}
+    while True:
+        descendants = {entity.id for entity in entities if entity.parent_id in hidden}
+        expanded = hidden | descendants
+        if expanded == hidden:
+            return hidden
+        hidden = expanded
+
+
+def _rename_prefix(value, old_name: str, new_name: str):
+    if not isinstance(value, str):
+        return value
+    if value == old_name:
+        return new_name
+    # Only a recorded place prefix is changed; arbitrary notes and substrings stay intact.
+    for suffix in ('・', 'の中', 'の上', 'の近く', 'の場所'):
+        if value.startswith(old_name + suffix):
+            return new_name + value[len(old_name):]
+    if value.startswith(f'「{old_name}」'):
+        return f'「{new_name}」' + value[len(old_name) + 2:]
+    return value
+
+
+def apply_object_names(entities: list[SpatialEntity], corrections: list[ObjectCorrection]) -> list[SpatialEntity]:
+    """Correct identities and generated locations without rewriting personal notes."""
+    names = {(c.source_prediction, c.object_id): c.name for c in corrections if c.name is not None}
+    renamed = {}
+    result = []
+    for entity in entities:
+        name = names.get(entity_object_key(entity))
+        if name is not None and name != entity.name:
+            old_name = entity.name
+            renamed[entity.id] = (old_name, name)
+            metadata = dict(entity.metadata)
+            if 'location' in metadata:
+                metadata['location'] = _rename_prefix(metadata['location'], old_name, name)
+            entity = entity.model_copy(update={
+                'name': name,
+                'aliases': [name if alias == old_name else alias for alias in entity.aliases],
+                'tags': [name if tag == old_name else tag for tag in entity.tags],
+                'description': _rename_prefix(entity.description, old_name, name),
+                'metadata': metadata,
+            })
+        result.append(entity)
+    by_id = {entity.id: entity for entity in result}
+    updated = []
+    for entity in result:
+        description = entity.description
+        metadata = dict(entity.metadata)
+        current = entity
+        seen = {entity.id}
+        while current.parent_id in by_id and current.parent_id not in seen:
+            current = by_id[current.parent_id]
+            seen.add(current.id)
+            if current.id in renamed:
+                old_name, name = renamed[current.id]
+                description = _rename_prefix(description, old_name, name)
+                if 'location' in metadata:
+                    metadata['location'] = _rename_prefix(metadata['location'], old_name, name)
+        parent = by_id.get(entity.parent_id)
+        if (parent is not None and entity.metadata.get('shelf_item') == 1
+                and entity_object_key(parent) in names):
+            level, side = metadata.get('level'), metadata.get('side')
+            if isinstance(level, int) and not isinstance(level, bool) and level > 0 and side in ('左', '中央', '右'):
+                # This field is generated by the registration UI. Rebuild it also
+                # for writes from an older browser tab after its parent was renamed.
+                description = f'{parent.name}・上から{level}段目・{side}'
+        updated.append(entity.model_copy(update={'description': description, 'metadata': metadata}))
+    return updated

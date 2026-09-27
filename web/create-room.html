@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="theme-color" content="#0f1115" />
+<title>新しい部屋を作る | Spatial Memory V2</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:system-ui,sans-serif;background:#0f1115;color:#f4f6f8}
+main{max-width:680px;margin:auto;padding:24px 16px 48px}.back{color:#a9b4c5;text-decoration:none}h1{margin:18px 0 6px}
+.muted{color:#9ca3af;line-height:1.5}.card{margin-top:22px;padding:18px;background:#191d24;border:1px solid #2b313d;border-radius:16px}
+label{display:block;font-weight:700;margin:14px 0 5px}input{width:100%;padding:13px;border-radius:10px;border:1px solid #3a4250;background:#11151b;color:#fff;font:inherit}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.hint{font-size:12px;color:#8f9bad;margin-top:4px}
+button{width:100%;min-height:54px;margin-top:20px;border:0;border-radius:12px;background:#2b5cff;color:#fff;font:inherit;font-weight:800;cursor:pointer}
+button:disabled{opacity:.5}.status{margin-top:14px;padding:12px;border-radius:10px;background:#12161d}.ok{color:#74df94}.warn{color:#ffca67}
+details{margin-top:14px}@media(max-width:560px){.two{grid-template-columns:1fr}}
+</style>
+</head><body>
+<main>
+<a class="back" href="/">← 部屋一覧へ</a>
+<h1>新しい部屋を作る</h1>
+<div class="muted">部屋をゆっくり見回す動画を選ぶと、VM上で3D空間を生成します。</div>
+<section class="card">
+<label for="sceneName">部屋の名前</label>
+<input id="sceneName" value="My Room" placeholder="例: リビング" />
+<label for="sceneVideo">部屋を撮影した動画</label>
+<input id="sceneVideo" type="file" accept="video/*" capture="environment" />
+<div class="hint">急なパンや大きなブレを避け、同じ場所が複数方向から映るように撮影してください。</div>
+<div id="samplingPlan" class="status muted">動画を選ぶと、長さ・動き・ブレから自動設定を計算します。</div>
+<details>
+<summary>詳細設定</summary>
+<label style="display:flex;align-items:center;gap:8px;font-weight:600"><input id="manualSampling" type="checkbox" style="width:auto;margin:0" /> 手動設定を使う</label>
+<div class="two">
+<div>
+<label for="sampleFps">抽出FPS</label>
+<input id="sampleFps" type="number" min="0.5" max="30" step="0.5" value="2" />
+<div class="hint">1秒から何枚使うか。現在の推奨値: 2</div>
+</div><div>
+<label for="maxFrames">最大フレーム数</label>
+<input id="maxFrames" type="number" min="2" max="240" value="60" />
+<div class="hint">処理する画像の上限。現在の推奨値: 60</div>
+</div>
+</div>
+</details>
+<button id="reconstructBtn">動画から3Dの部屋を作る</button>
+<div id="reconstructStatus" class="status muted">動画を選択してください</div>
+</section>
+</main>
+<script type="module" src="/static/create-room.js"></script>
+</body>
+</html>

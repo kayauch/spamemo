@@ -1,0 +1,46 @@
+/* Camera controls have their own layout so the creation form never crowds them. */
+.room-camera{--camera-rail:calc(100px + env(safe-area-inset-right));background:#080d12}
+.room-camera:before{display:none}
+.room-camera video{width:calc(100% - var(--camera-rail));height:100%;object-fit:contain}
+.camera-back,.camera-settings,.camera-review{position:absolute;z-index:4;border:1px solid #ffffff26;background:#101923b8;backdrop-filter:blur(12px);color:#fff;border-radius:24px;min-height:44px}
+.camera-back{top:max(14px,env(safe-area-inset-top));left:max(16px,env(safe-area-inset-left));display:flex;align-items:center;gap:4px;padding:8px 14px 8px 8px;font-size:13px}
+.camera-back .sm-icon{transform:rotate(180deg);width:19px}
+.camera-settings{top:max(14px,env(safe-area-inset-top));right:max(26px,env(safe-area-inset-right));width:46px;padding:10px}
+.camera-settings[aria-expanded=true]{background:#26456d;border-color:#86b4f5}
+.camera-hint{position:absolute;z-index:2;top:max(20px,env(safe-area-inset-top));left:calc((100% - var(--camera-rail))/2);transform:translateX(-50%);margin:0;padding:5px 12px;background:#111a2499;border-radius:20px;color:#fff;white-space:nowrap;font-size:13px;pointer-events:none}
+.is-recording .camera-hint,.needs-landscape .camera-hint{visibility:hidden}
+.camera-record-controls{position:absolute;z-index:4;right:max(14px,env(safe-area-inset-right));top:50%;transform:translateY(-50%);width:72px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.camera-time{font-size:14px;font-variant-numeric:tabular-nums;letter-spacing:.06em;white-space:nowrap;color:#f4f7fb}
+.is-recording .camera-time:before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:#ff545a;margin-right:6px;vertical-align:2px}
+.camera-shutter{width:70px;height:70px;min-height:70px;padding:0;border:4px solid #fff;border-radius:50%;background:transparent;display:grid;place-items:center;box-shadow:0 2px 14px #0003}
+.camera-shutter span{width:52px;height:52px;border-radius:50%;background:#ff444c;transition:border-radius .15s,width .15s,height .15s}
+.camera-shutter.recording span{width:27px;height:27px;border-radius:6px}
+.camera-record-label{font-size:11px;color:#c8d5e4;line-height:1.4;min-height:16px}
+.camera-review{bottom:max(18px,env(safe-area-inset-bottom));left:max(16px,env(safe-area-inset-left));padding:9px 14px;display:flex;align-items:center;gap:7px;font-size:12px}
+.camera-review .sm-icon{width:17px;height:17px}
+.camera-status{position:absolute;z-index:5;bottom:max(18px,env(safe-area-inset-bottom));left:max(180px,calc(env(safe-area-inset-left) + 164px));right:max(116px,calc(env(safe-area-inset-right) + 104px));padding:10px 14px;margin:0;border:1px solid #ffffff24;border-radius:12px;background:#15273df0;color:#f0f6ff;text-align:center;font-size:12px;line-height:1.6;max-height:calc(100% - 100px);overflow:auto}
+.camera-controls{position:absolute;z-index:6;top:max(70px,calc(env(safe-area-inset-top) + 58px));right:max(112px,calc(env(safe-area-inset-right) + 100px));width:280px;max-width:calc(100% - 140px);max-height:calc(100dvh - 88px - env(safe-area-inset-bottom));overflow:auto;overscroll-behavior:contain;border:1px solid #ffffff2b;border-radius:16px;background:#13202df5;box-shadow:0 12px 44px #0005;padding:12px;backdrop-filter:blur(16px)}
+.camera-control-row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:48px;border:0;border-radius:8px;background:transparent;padding:10px;font-size:13px;text-align:left}
+.camera-control-row:hover{background:#ffffff0a}.camera-control-row[aria-pressed=true]{background:#204469;color:#aed5ff}
+.camera-control-row .sm-icon{width:19px;height:19px}.camera-control-row span{flex:1}.camera-control-row[aria-pressed=true]:after{content:'✓'}
+.camera-zoom{display:flex;gap:6px;padding:8px 4px 12px;border-bottom:1px solid #ffffff1a;margin-bottom:4px}
+.camera-zoom button{flex:1;border:1px solid #ffffff20;border-radius:9px;background:#0e1a27;min-width:44px;min-height:44px;color:#cad6e7;font-size:13px}
+.camera-zoom button[aria-pressed=true]{background:#176ee0;border-color:#7db5ff;color:#fff}
+.camera-tips-panel{font-size:12px;line-height:1.85;color:#b7c8dc;padding:5px 12px 10px}.camera-tips-panel ul{padding-left:17px;margin:0}
+.camera-grid{position:absolute;inset:0 var(--camera-rail) 0 0;z-index:1;pointer-events:none;background:linear-gradient(to right,transparent 33.2%,#fff6 33.2%,#fff6 33.45%,transparent 33.45%,transparent 66.5%,#fff6 66.5%,#fff6 66.75%,transparent 66.75%),linear-gradient(to bottom,transparent 33.2%,#fff6 33.2%,#fff6 33.45%,transparent 33.45%,transparent 66.5%,#fff6 66.5%,#fff6 66.75%,transparent 66.75%)}
+.camera-orientation{position:absolute;z-index:5;top:50%;left:calc((100% - var(--camera-rail))/2);transform:translate(-50%,-50%);width:min(370px,calc(100% - 170px));padding:18px 24px;border:1px solid #629de255;border-radius:16px;background:#101f30ee;color:#f0f6ff;text-align:center;font-size:15px;line-height:1.8;pointer-events:none}
+@media(orientation:portrait){
+  .room-camera{--camera-rail:0px}.room-camera video{width:100%}
+  .camera-settings{right:max(16px,env(safe-area-inset-right))}
+  .camera-record-controls{top:auto;right:auto;left:50%;bottom:max(24px,env(safe-area-inset-bottom));transform:translateX(-50%)}
+  .camera-orientation{width:calc(100% - 48px);max-width:370px}
+  .camera-controls{right:16px;max-width:calc(100% - 32px);max-height:calc(100dvh - 248px)}
+  .camera-status{bottom:164px;left:16px;right:16px}
+  .camera-review{bottom:28px;max-width:calc(50% - 60px);padding:9px 10px;gap:5px}.camera-review .sm-icon{display:none}
+}
+@media(max-height:350px) and (orientation:landscape){
+  .camera-back,.camera-settings{top:8px}.camera-hint{top:12px}.camera-controls{top:60px;max-height:calc(100dvh - 72px)}
+  .camera-record-controls{gap:5px}.camera-shutter{width:62px;height:62px;min-height:62px}.camera-shutter span{width:46px;height:46px}.camera-shutter.recording span{width:25px;height:25px}
+}
+
+@media(max-width:500px) and (orientation:landscape){.camera-hint{display:none}}
